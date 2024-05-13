@@ -1,0 +1,212 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1 user-scalable=0"/>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>文件上传</title>货主[3100]货品[PAE234004AA00012]箱含量未正确配置
+
+    <style>
+
+        /*初始化css*/
+        
+        *{ margin:0; padding: 0;}
+        
+        html,body{ 
+            width: 100%; height: 100%; background: #e4e4e4; 
+        
+            -webkit-tap-highlight-color: rgba(88,44,22,0.9);
+        
+            -webkit-touch-callout: none; 
+        
+            -webkit-user-select: none;
+        
+        }
+        
+        /*主体页面样式*/
+        
+        .main{ width: 100%; height: 100%; position: relative;background: #ffffff;}
+        .uplBox{
+            width: 200px;
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translate(-100px,0);
+        }
+        .btn{
+            width: 100%;
+            height: 30px;
+            background: #00aa91;
+            border: none;
+            color: #ffffff;
+            border-radius: 50px;
+        }
+        .upl{
+            width: 100%;
+            height: 30px;
+            background: #00aa91;
+            border: none;
+            color: #ffffff;
+            border-radius: 50px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+        @keyframes show {
+            0% {
+                opacity: 0;
+            }
+                            
+            100% {
+                opacity: 1;
+            }            
+        }
+        
+        @keyframes hide {
+            0% {
+                opacity: 1;
+            }
+                        
+            100% {
+                opacity: 0;
+            }
+        } 
+        
+        .toast_box {
+            /* width: 100%; */
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            /* justify-content: center; */
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+                        
+        .toast_box p {
+            box-sizing: border-box;
+            padding: 10px 20px;
+            width: max-content;
+            /* 提示框的背景色 */
+            background: #707070;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 6px;
+            opacity: 0.8;
+        } 
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!--页面主体部分-->
+
+<div class="main">
+    <div>
+        <div>
+
+        </div>
+        <div class="uplBox">
+            <button class="btn">上传文件</button>
+            <input class="upl" type="file" onchange="handleFile()" id="fileinput"/>
+        </div>
+        
+    </div>
+    <!-- 提示 -->
+    <div class="toast_box">
+        <p id="toast"></p>
+    </div>
+
+</div>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+
+    $(function(){
+        
+
+    })
+    
+    function getQueryVariable(variable){
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){
+                return pair[1];
+            }
+        }
+       return(false);
+    }
+    function handleFile(){
+        
+        let file = $("#fileinput")[0].files.length ? $("#fileinput")[0].files[0]:'';  
+        if(!file) return
+
+        let typs=['doc','docx','xls','xlsx','pdf','PDF']
+        let list=file.name?file.name.split('.'):'';
+        let type=list[list.length-1]
+        if(!typs.includes(type)){
+           return toast("上传格式只能为EXCEL,WORD,PDF",3000);
+        }
+        console.log(file.name)
+        var reader = new FileReader(); //实例化文件读取对象
+        reader.readAsDataURL(file); //将文件读取为 DataURL,也就是base64编码
+        reader.onload = function(ev) { //文件读取成功完成时触发
+            var dataURL = ev.target.result; //获得文件读取成功后的DataURL,也就是base64编码
+            
+            //getEnv获取环境
+            parent.wx.miniProgram.getEnv(function (res) { 
+                console.log(res.miniprogram)
+                if (res.miniprogram) { 
+                    //如果当前是小程序环境
+                    parent.wx.miniProgram.postMessage({ 
+                        data:  { 
+                            name:file.name,
+                            dataURL:dataURL,
+                            type:getQueryVariable("type")
+                        }
+                    })
+                    parent.wx.miniProgram.navigateBack()
+                } 
+            })
+            
+        }  
+
+    };
+
+    //形参分别是: 提示内容,停留时间时间
+    function toast(text, time) {
+        let toast = document.getElementById('toast');
+        let toast_box = document.getElementsByClassName('toast_box')[0];
+        toast.innerHTML = text;
+        toast_box.style.animation = 'show 1.5s'
+        toast_box.style.display = 'inline-block';
+        setTimeout(function(){
+            toast_box.style.animation = 'hide 1.5s'
+            setTimeout(function(){
+                toast_box.style.display = 'none';
+            }, 1400)
+        }, time)   
+    }
+
+
+    
+    
+        
+   
+
+</script>
+
+</body>
+
+</html>
